@@ -1,12 +1,11 @@
 from pymongo import MongoClient
 import os, sys, getopt
-from settings import patent_path,class_path, train_path
+from settings import patent_path,class_path,train_path
 import json
 import pymongo
 import os.path
-from label import markup
 import csv
-
+from label import markup
 client = MongoClient()
 client = MongoClient('localhost', 27017)
 db = client["patent_db"]
@@ -50,20 +49,6 @@ def insert(file_name):
 
 #bin\mallet train-topics  --input 345173.mallet  --num-topics 20 --optimize-interval 20 --output-state 345173-topic-state.gz  --output-topic-keys 345173_keys.txt --output-doc-topics 345173_composition.txt
 def get_single_class_with_date():
-    pipeline = [{'$match':{'$and':[{'abstract':{'$exists': true}},{'us_classification':{'$size':1}}]}},
-        {'$group':{
-            "_id":"$us_classification",
-            'abstracts':{
-            '$push':{
-                'abstract':'$abstract',
-                'patid':'$_id',
-                'date':'$date-produced'
-            }}
-        }}]
-    patents.aggregate(pipeline)
-
-
-def get_single_class_with_date():
     pipeline=[
         {'$match':{'$and':[{'abstract':{'$exists':True}},{'us_classification':{'$size':1}}]}},
         {'$group':{
@@ -86,6 +71,30 @@ def get_single_class_with_date():
                 for patent in uspc['abstracts']:
                     writer.writerow({'id':patent['patid'],'date':patent['date']})
 
+
+def get_single_class():
+    pipeline=[
+        {'$match':{'$and':[{'abstract':{'$exists':True}},{'us_classification':{'$size':1}}]}},
+        {'$group':{
+            "_id":"$us_classification",
+            'abstracts':{
+            '$push':{
+                'abstract':'$abstract',
+                'patid':'$_id'
+            }}
+        }}]
+    for uspc in patents.aggregate(pipeline=pipeline):
+        path = class_path+uspc['_id'][0]
+        if not os.path.exists(path):
+            os.makedirs(path)
+        for patent in uspc['abstracts']:
+            fp = os.path.join(path,patent['patid'])
+            with open(fp+".txt","w") as outfile:
+                # Before writing to file, markup " " with noun phases
+                # using RAKE technique.
+                re = markup(patent['abstract'])
+                outfile.write(re)
+
 def main(argv):
     # define local variables
     inputfile = 0
@@ -100,7 +109,7 @@ def main(argv):
         sys.exit(2)
     for opt, arg in opts:
         if opt == '--help':
-            print('[Example Usage] ./db-client.py \n\
+            print('[Example Usage] ./parse_patent.py \n\
             --input=/path/to/data.json  # Specify path to data for processing\n'
             )
             sys.exit()

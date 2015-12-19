@@ -1,3 +1,5 @@
+# Load/install necessary packages
+library(devtools)
 library(shiny)
 library(wordcloud)
 library(mallet)
@@ -149,7 +151,7 @@ shinyServer(function(input, output) {
     sp <- ggplot(mdata, aes(x=shortdate, y=value,color=variable,group=variable)) + geom_line()+ scale_y_continuous("")+ scale_x_discrete("")
     
     # Divide by levels of "sex", in the vertical direction
-    sp + facet_wrap(~variable,ncol=3,scales="free")+ theme_bw()+theme(axis.title=element_blank(), 
+    sp + facet_wrap(~variable,ncol=2,scales="free")+ theme_bw()+theme(axis.title=element_blank(), 
                                                            axis.text=element_blank(),
                                                            axis.ticks=element_blank(),
                                                           strip.text = element_blank()
@@ -172,4 +174,23 @@ shinyServer(function(input, output) {
     datatable(topic.docs(), escape = FALSE, filter = 'bottom', extensions = 'Responsive')
   },escape=FALSE,options = list(lengthMenu = c(10,15), pageLength = 10))
   
+  output$ldavis <-renderVis({
+    phi <- mallet.topic.words(models(), smoothed = TRUE, normalized = TRUE)
+    # Now get the smoothed estimates of the document-topic distributions:
+    topic.words <- mallet.topic.words(models(), smoothed = TRUE, normalized = FALSE)
+    vocab <- models()$getVocabulary()
+    word.freqs <- mallet.word.freqs(models())
+    term.freqs <- word.freqs$term.freq
+    doc.tokens <- data.frame(id=c(1:nrow(doc.topics())), tokens=0)
+    for(i in vocab){
+      # Find word if word in text
+      matched <- grepl(i,docs()$text)
+      doc.tokens[matched,2] =doc.tokens[matched,2] +  1
+    }
+    json <-createJSON(phi = phi, 
+                      theta = doc.topics(), 
+                      doc.length = doc.tokens$tokens, 
+                      vocab = vocab,
+                      term.frequency = term.freqs)
+  })
 })

@@ -12,6 +12,8 @@ ui <- dashboardPage(skin="black",
                badgeLabel = "new", badgeColor = "green"),
       menuItem("Trending", icon = icon("th"), tabName = "trending",
                badgeLabel = "new", badgeColor = "green"),
+      menuItem("Topics Interpolation", icon = icon("th"), tabName = "interpolation",
+               badgeLabel = "new", badgeColor = "green"),
       sliderInput("slider", "Topic Number:", 1, 20, 1),
       selectInput("select", label = "Class Item",
                   choices = list("345173" = 345173, "370328" = 370328,
@@ -30,11 +32,10 @@ ui <- dashboardPage(skin="black",
               # Boxes need to be put in a row (or column)
               fluidRow(
             
-                box(     width=5, title = "Words Cloud", status="danger",
+                box(     width=5, title = "Words Cloud", status="primary",
                           collapsible = TRUE,
-                          
-                          plotOutput("plot1",height = 400)),
-                box(    width=7,  title = "Weight", status="danger",
+                          plotOutput("plot1")),
+                box(    width=7,  title = "Weight", status="primary",
                           collapsible = TRUE,
                           plotOutput("plot2",width=400)
                 )
@@ -42,7 +43,7 @@ ui <- dashboardPage(skin="black",
               ),
               fluidRow(
                 column(width = 12,
-                box(      title = "Diagram", status="danger",
+                box(      title = "Diagram", status="primary",
                           collapsible = TRUE, width = NULL,
                           
                           plotOutput("plot3")
@@ -69,7 +70,12 @@ ui <- dashboardPage(skin="black",
                        box(width = NULL, collapsible = TRUE,
                            plotlyOutput("alltrend",width="100%",height=800),
                            class="plot-center")
-                )))
+                ))),
+      tabItem(tabName = "interpolation",
+              fluidRow(
+                           visOutput("ldavis")
+                ))
+      
       
     )
    
