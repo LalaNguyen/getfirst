@@ -7,18 +7,8 @@ ui <- dashboardPage(skin="black",
   dashboardSidebar(
     
     sidebarMenu(
-      menuItem("Dashboard", tabName = "dashboard", icon = icon("dashboard")),
-      menuItem("Ranking Documents", icon = icon("th"), tabName = "widgets",
-               badgeLabel = "new", badgeColor = "green"),
-      menuItem("Trending", icon = icon("th"), tabName = "trending",
-               badgeLabel = "new", badgeColor = "green"),
-      menuItem("Topics Interpolation", icon = icon("th"), tabName = "interpolation",
-               badgeLabel = "new", badgeColor = "green"),
-      sliderInput("slider", "Topic Number:", 1, 20, 1),
-      selectInput("select", label = "Class Item",
-                  choices = list("345173" = 345173, "370328" = 370328,
-                                 "370252" = 370252), selected = 345173)
-      
+      menuItem("Homepage", tabName = "dashboard", icon = icon("dashboard")),
+      selectizeInput('selectize', label=NULL, choices = NULL, multiple=TRUE, options = list(maxOptions = 1000,placeholder = 'Write keywords'))
     )
     
   ),
@@ -31,53 +21,19 @@ ui <- dashboardPage(skin="black",
       tabItem(tabName = "dashboard",
               # Boxes need to be put in a row (or column)
               fluidRow(
-            
-                box(     width=5, title = "Words Cloud", status="primary",
-                          collapsible = TRUE,
-                          plotOutput("plot1")),
-                box(    width=7,  title = "Weight", status="primary",
-                          collapsible = TRUE,
-                          plotOutput("plot2",width=400)
-                )
-                
-              ),
+                column(width = 12,
+                       box(width = NULL, 
+                           title = "STEP 1 - CLASSIFICATION",
+                           collapsible = TRUE,
+                           DT::dataTableOutput('text1'))
+              )),
               fluidRow(
                 column(width = 12,
-                box(      title = "Diagram", status="primary",
-                          collapsible = TRUE, width = NULL,
-                          
-                          plotOutput("plot3")
+                       box(width = NULL, 
+                           title = "STEP 2 - FINDING FREQUENT COMPOUND NOUNS",
+                           collapsible = TRUE,
+                           DT::dataTableOutput('text2'))
                 ))
-                
-              )
-      ),
-      
-      tabItem(tabName = "widgets",
-              fluidRow(
-                column(width = 12,
-                       box(width = NULL, collapsible = TRUE,
-                           plotlyOutput("trend",width="100%"),
-                           class="plot-center")
-                )),
-              fluidRow(
-                column(width = 12,
-                box(width = NULL,DT::dataTableOutput("weights"))
-              ))
-          ),
-      tabItem(tabName = "trending",
-              fluidRow(
-                column(width = 12,
-                       box(width = NULL, collapsible = TRUE,
-                           plotlyOutput("alltrend",width="100%",height=800),
-                           class="plot-center")
-                ))),
-      tabItem(tabName = "interpolation",
-              fluidRow(
-                           visOutput("ldavis")
-                ))
-      
-      
-    )
-   
-  )
+      )
+    ))
 )

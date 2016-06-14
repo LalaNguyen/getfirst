@@ -10,18 +10,21 @@ try:
     from io import StringIO
 except ImportError:
     from cStringIO import StringIO
-import sys, getopt
+import sys, getopt,os
 import xml.sax
 import json
 import copy
 import re
 import collections
 from collections import defaultdict
+from settings import patent_path,class_path,train_path
 
 #Define settings and global variables
 NEO4J_URL = "http://localhost:7474/db/data"
 MAX_NUMBER_OF_PATENTS = True
 MAX_NUMBER_OF_OUTPUT_FILE = 50
+abs_path= patent_path
+
 class PatentHandler(xml.sax.ContentHandler):
     """Patent Handler creates a handler to hold formatted data that are parsed from xml file.
     Current captured XML tags:
@@ -171,6 +174,7 @@ class PatentHandler(xml.sax.ContentHandler):
         #results["claims"]=self.claims
         if self.appl_type!="design":
             results["abstract"]=self.abstract
+        #print(results)
         return results
 
 
@@ -211,8 +215,6 @@ def parse_xml(file_name, size = 0, method = "json"):
     # Set initial values
     count = 0
     results = []
-    # add benchmark
-    # bm = BenchMark()
     global MAX_NUMBER_OF_PATENTS
     # create an XML Reader
     parser = xml.sax.make_parser()
@@ -223,28 +225,52 @@ def parse_xml(file_name, size = 0, method = "json"):
     # override the default Context Handler
     xml_patent_handler = PatentHandler()
     parser.setContentHandler(xml_patent_handler)
-    try:
-        with open(file_name) as citation:
-            # bm.toggleOn('Start processing [ ]')
-            for xml_part in xml_documents(citation):
-                # Cast string back to file-like object to parse
-                parser.parse(StringIO(xml_part))
-                results.append(copy.deepcopy(xml_patent_handler.serialization()))
-                count = count+1
-                if not MAX_NUMBER_OF_PATENTS:
-                    if count == int(size):
-                        break
-                # Clean up stack after processing one xml paragraph
-                xml_patent_handler.reset()
-                # bm.add(0)
-
-        # bm.toggleOff(' \bOK] - '+ str(count) + ' patents ')
-        if method == "json":
-            export2json(file_name, results)
-        return 0
-
-    except IOError as e:
-        raise e
+    if(file_name=="all"):
+    # First validate if input folder already contain json file
+        for folder in os.listdir(abs_path):
+            isEmpty=True
+            folder_path = abs_path+"/"+folder
+            # First brutal check if any json file exist
+            for file in os.listdir(folder_path):
+                if file.endswith(".json"):
+                    isEmpty=False
+                    print("This folder"+folder+" is already processed")
+                    break
+            # If this file contains no json string, we begin to extract
+            if isEmpty:
+                file_name=folder_path+"/"+folder+'.xml'
+                print("Processing file ", file_name)
+                try:
+                    with open(file_name) as citation:
+                        for xml_part in xml_documents(citation):
+                            parser.parse(StringIO(xml_part))
+                            results.append(copy.deepcopy(xml_patent_handler.serialization()))
+                            count = count+1
+                            if not MAX_NUMBER_OF_PATENTS:
+                                if count == int(size):
+                                    break
+                            xml_patent_handler.reset()
+                    if method == "json":
+                        export2json(file_name, results)
+                except IOError as e:
+                    raise e
+    # Specific file name is provided, process them individually
+    else:
+        try:
+            with open(file_name) as citation:
+                for xml_part in xml_documents(citation):
+                    parser.parse(StringIO(xml_part))
+                    results.append(copy.deepcopy(xml_patent_handler.serialization()))
+                    count = count+1
+                    if not MAX_NUMBER_OF_PATENTS:
+                        if count == int(size):
+                            break
+                    xml_patent_handler.reset()
+            if method == "json":
+                export2json(file_name, results)
+            return 0
+        except IOError as e:
+            raise e
 
 def export2json(file_name, data):
     """Export to json file
@@ -264,14 +290,18 @@ def export2json(file_name, data):
     while True:
         old = i
         i += step
+        counter += 1
         if i >= len(data):
             with open(name+"_"+str(counter)+'.json', 'w') as outfile:
                 json.dump(data[old:len(data)], outfile, indent=4, ensure_ascii=False)
             break
+        elif len(data)<MAX_NUMBER_OF_OUTPUT_FILE:
+            with open(name+"_"+str(len(data))+'.json', 'w') as outfile:
+                json.dump(data[old:len(data)], outfile, indent=4, ensure_ascii=False)
+                break
         else:
             with open(name+"_"+str(counter)+'.json', 'w') as outfile:
                 json.dump(data[old:i], outfile, indent=4, ensure_ascii=False)
-        counter += 1
     return 0
 
 def main(argv):

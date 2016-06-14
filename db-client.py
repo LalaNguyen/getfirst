@@ -59,7 +59,7 @@ def get_single_class_with_date():
                 'date':'$date-published'
             }}
         }}]
-    for uspc in patents.aggregate(pipeline=pipeline):
+    for uspc in patents.aggregate(pipeline=pipeline,allowDiskUse=True):
         path = train_path+uspc['_id'][0]
         if not os.path.exists(path):
             pass
@@ -83,7 +83,7 @@ def get_single_class():
                 'patid':'$_id'
             }}
         }}]
-    for uspc in patents.aggregate(pipeline=pipeline):
+    for uspc in patents.aggregate(pipeline=pipeline,allowDiskUse=True):
         path = class_path+uspc['_id'][0]
         if not os.path.exists(path):
             os.makedirs(path)

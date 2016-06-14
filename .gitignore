@@ -5,7 +5,9 @@ ehthumbs.db
 data
 class
 train
-
+R-scripts/classes
+R-scripts/mallet
+R-scripts/testclass
 # Folder config file
 Desktop.ini
 

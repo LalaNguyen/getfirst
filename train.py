@@ -6,18 +6,17 @@ import shutil
 def get_tree_size(path):
     """Return total size of files in given path and subdirs."""
     total = 0
-    for entry in os.scandir(path):
-        if entry.is_dir(follow_symlinks=False):
-            total += get_tree_size(entry.path)
-        else:
-            total += entry.stat(follow_symlinks=False).st_size
+    for file in os.listdir(path):
+        file_path = path+"/"+file
+        if not os.path.isdir(file_path):
+            total += os.path.getsize(file_path)
     return total
 
 results={}
 for folder in os.listdir(class_path):
     folder_path = os.path.join(class_path,folder)
     results[folder]=get_tree_size(folder_path)
-re_sorted_by_value = OrderedDict(sorted(results.items(), key=lambda x: x[1],reverse=True)[:10])
+re_sorted_by_value = OrderedDict(sorted(results.items(), key=lambda x: x[1],reverse=True)[:30])
 
 # Delete the train folder
 for folder in os.listdir(train_path):
