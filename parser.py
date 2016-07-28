@@ -20,7 +20,6 @@ from collections import defaultdict
 from settings import patent_path,class_path,train_path
 
 #Define settings and global variables
-NEO4J_URL = "http://localhost:7474/db/data"
 MAX_NUMBER_OF_PATENTS = True
 MAX_NUMBER_OF_OUTPUT_FILE = 50
 abs_path= patent_path

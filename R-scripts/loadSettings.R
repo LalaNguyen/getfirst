@@ -13,6 +13,5 @@ sql_pass <- "makata0611"
 sql_user <- "postgres"
 setDict("C:/dict/")
 googlesearch<-"https://www.google.com/search?q=define+"
-outDir <- "C:/Users/Administrator/OPAIRS/R-scripts/testclass/606200/"
-testLabel<-"606200"
+
 

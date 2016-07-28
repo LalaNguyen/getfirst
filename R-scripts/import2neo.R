@@ -1,5 +1,5 @@
 library("RNeo4j")
-setwd("../classes")
+setwd('C:/Users/Administrator/OPAIRS/R-scripts/classes')
 folders <- list.dirs(path=".", recursive = TRUE)
 ## Filter class name from dir list, Retrieve the last element
 ## Nested classes do not supported

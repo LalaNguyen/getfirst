@@ -1,4 +1,0 @@
-#!c:\users\administrator\opairs\web\venv\scripts\python.exe
-# EASY-INSTALL-SCRIPT: 'conda==3.17.0','conda'
-__requires__ = 'conda==3.17.0'
-__import__('pkg_resources').run_script('conda==3.17.0', 'conda')
